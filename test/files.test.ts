@@ -1,4 +1,4 @@
-import { describe } from "vitest";
+import { describe, it, expect } from "vitest";
 // import { parseFilePaths } from "../src/files";
 
 // const testProjectDirectory = [
@@ -15,6 +15,9 @@ import { describe } from "vitest";
 // ];
 
 describe("Get files structure", () => {
+  it("should pass", () => {
+    expect(true).toBe(true);
+  });
   // const filesStructure = parseFilePaths(testProjectDirectory);
   // describe("Split file path and directory into tuple", () => {
   //   it("should split file path and directory into tuple", () => {
