@@ -1,3 +1,18 @@
+export interface Config {
+  sourceRoot: string;
+  root: string;
+  routesDirectory: string;
+  configPath: string;
+  generatedRouteTree: string;
+  extensions: string[];
+  fileNames: {
+    index: string;
+    layout: string;
+    notFound: string;
+    root: string;
+  };
+}
+
 export type NestedDirStructure = {
   filePath: string;
   layout?: string;
@@ -63,6 +78,7 @@ export type RouteType =
   | LayoutRoute
   | RootRoute
   | NotFoundRoute;
+
 export type FilesConfig = { appRoot: string; pagesRoot: string };
 
 export type FileDetails = {

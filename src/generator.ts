@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-// import { Route } from "../types/types";
-// import { Node } from "./core";
 import { RouteType } from "./types/types";
 import * as prettier from "prettier";
 
@@ -73,7 +70,8 @@ const genConfig = (routes: RouteType[]) => {
 };
 
 const findChildren = (routes: RouteType[], parent: string) => {
-  return routes.filter(route => (route as any)?.parent === parent);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return routes.filter(route => (route as any).parent === parent);
 };
 
 function genRouteTreeNodeCode(routes: RouteType[], node: string): string {
@@ -97,7 +95,19 @@ const genRouteTreeCode = (routes: RouteType[]) => {
   return `export const routeTree = ${genRouteTreeNodeCode(routes, root)};`;
 };
 
+// const routesOrder = {
+//   root: -1,
+//   index: 0,
+//   layout: 1,
+//   route: 2,
+//   notFound: 3,
+// } as const;
+
 export const createRouterCode = async ({ routes }: { routes: RouteType[] }) => {
+  // const sortedRoutes = routes.sort((a, b) => {
+  //   return routesOrder[a.type] - routesOrder[b.type];
+  // });
+
   const variables = genVariables(routes);
   const config = genConfig(routes);
   const routeTree = genRouteTreeCode(routes);

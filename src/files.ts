@@ -1,72 +1,70 @@
-/**
- * This file contains utility functions for parsing file paths.
- */
+import { Config, FileDetails } from "./types/types";
+import path from "path";
 
-import { FilesConfig, FileDetails } from "./types/types";
+export const buildRouteFileRegex = (
+  { root, sourceRoot, routesDirectory, fileNames, extensions }: Config,
+  absolute = true
+) =>
+  new RegExp(
+    `(./${path.join(
+      absolute ? root : ".",
+      sourceRoot,
+      routesDirectory
+    )}[A-Za-z./$-]*)(${Object.values(fileNames).join("|")}).(${extensions.join(
+      "|"
+    )})$`
+  );
 
-// List of file types used in the file search path
-const fileTypes = ["root", "index", "layout", "not-found"];
+// Get glob pattern for routes files
+export const fileSearchPath = ({
+  sourceRoot,
+  routesDirectory,
+  fileNames,
+  extensions,
+}: Config) =>
+  `${sourceRoot}/${routesDirectory}/**/{${Object.values(fileNames).join(
+    ","
+  )}}.{${extensions.join(",")}}`;
 
-// List of file extensions used in the file search path
-const extensions = ["jsx", "tsx", "js", "ts"];
+// Splits a file path into its directory and file name components.
+const splitFileDir = (
+  config: Config,
+  filePath: string
+): [string, string, string] => {
+  const regex = buildRouteFileRegex(config, false);
+  const match = filePath.match(regex);
 
-// Default configuration for file paths
-const defaultConfig: FilesConfig = { appRoot: "./src", pagesRoot: "./pages" };
+  if (!match) {
+    throw new Error(
+      `File path ${filePath} does not match the route file regex`
+    );
+  }
 
-/**
- * Returns the file search path for a given directory path.
- * @param path The directory path to search in.
- * @returns The file search path.
- */
-export const fileSearchPath = (path: string) =>
-  `${path}/{${fileTypes.join(",")}}.{${extensions.join(",")}}`;
+  const [, dir, name, extension] = match;
 
-/**
- * Splits a file path into its directory and file name components.
- * @param filePath The file path to split.
- * @returns An array containing the directory and file name components.
- */
-const splitFileDir = (filePath: string): [string, string] => {
-  const [file, ...dir] = filePath.split("/").reverse();
-  return [dir.reverse().join("/"), file];
+  return [dir.replace(/\/$/, ""), name, extension];
 };
 
-/**
- * Parses a file path and returns its details.
- * @param filePath The file path to parse.
- * @param config The configuration to use for parsing the file path.
- * @returns An object containing the details of the parsed file path.
- */
-const parseFilePath = (filePath: string, config?: FilesConfig): FileDetails => {
-  const { appRoot, pagesRoot } = config || defaultConfig;
-
-  const [dir, filename] = splitFileDir(filePath);
-  const relativeFileDir = dir.replace(appRoot, ".");
-  const path = relativeFileDir.replace(new RegExp(pagesRoot + "/?"), "");
-  const name = filename.replace(/\..+$/, "");
-  const importPath = `${relativeFileDir}/${name}`;
+// Parses a file path and returns its details.
+const parseFilePath = (config: Config, filePath: string): FileDetails => {
+  const { sourceRoot, routesDirectory } = config;
+  const [dir, name, extension] = splitFileDir(config, filePath);
+  const relative = dir.replace(sourceRoot, ".");
+  const importPath = `${relative}/${name}`;
+  const path = relative.replace(`./${routesDirectory}`, "");
 
   const route = {
     importPath,
     path,
     dir,
-    filename,
+    filename: `${name}/${extension}`,
     name,
+    extension,
   };
 
   return route;
 };
 
-/**
- * Parses an array of file paths and returns their details.
- * @param filePaths The array of file paths to parse.
- * @param config The configuration to use for parsing the file paths.
- * @returns An array of objects containing the details of the parsed file paths.
- */
-export const parseFilePaths = (filePaths: string[], config?: FilesConfig) => {
-  const mappedFiles = filePaths.map(filePath =>
-    parseFilePath(filePath, config)
-  );
-
-  return mappedFiles;
-};
+// Parses an array of file paths and returns their details.
+export const parseFilePaths = (config: Config, filePaths: string[]) =>
+  filePaths.map(filePath => parseFilePath(config, filePath));
