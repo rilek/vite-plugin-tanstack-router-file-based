@@ -1,7 +1,7 @@
 {
   "name": "@rilekstack/vite-plugin-tanstack-router-file-based",
   "version": "0.0.2-development",
-  "description": "A template for creating npm packages using TypeScript and VSCode",
+  "description": "Vite plugin to handle file based routing with @tanstack/router",
   "files": [
     "dist"
   ],
