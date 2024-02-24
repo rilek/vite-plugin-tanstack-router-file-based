@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { groupBy, identity, pickBy } from "lodash";
-import type {
+import {
   FileDetails,
   RootRoute,
   RouteType,

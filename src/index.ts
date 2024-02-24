@@ -10,15 +10,13 @@ import { getConfig } from "./config";
 const generateRouterFile = async (config: Config) => {
   const { sourceRoot, generatedRouteTree } = config;
   const filePaths = await fg(fileSearchPath(config));
-  const code = await buildRouteTree(config, filePaths);
+  const code = buildRouteTree(config, filePaths);
 
   fs.writeFileSync(path.join(sourceRoot, generatedRouteTree), code);
 };
 
 export function router(defaultConfig: Partial<Config> = {}): PluginOption {
   const config = getConfig({ ...defaultConfig });
-
-  console.log("ASDASDSAD");
 
   return {
     name: "vite-plugin-tanstack-router-file-based",

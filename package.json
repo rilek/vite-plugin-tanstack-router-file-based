@@ -114,6 +114,9 @@
       "@semantic-release/github"
     ]
   },
+  "engines": {
+    "node": ">=18"
+  },
   "directories": {
     "test": "test"
   }
