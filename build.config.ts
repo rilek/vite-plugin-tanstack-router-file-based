@@ -8,5 +8,9 @@ export default defineBuildConfig({
   rollup: {
     emitCJS: true,
     inlineDependencies: true,
+    dts: {
+      tsconfig: "./tsconfig.build.json",
+      respectExternal: false,
+    },
   },
 });

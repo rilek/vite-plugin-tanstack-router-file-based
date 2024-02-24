@@ -1,4 +1,4 @@
-import { Plugin } from "vite";
+import type { PluginOption } from "vite";
 import { buildRouteTree } from "./core";
 import { buildRouteFileRegex, fileSearchPath } from "./files";
 import fg from "fast-glob";
@@ -15,8 +15,10 @@ const generateRouterFile = async (config: Config) => {
   fs.writeFileSync(path.join(sourceRoot, generatedRouteTree), code);
 };
 
-export function router(defaultConfig: Partial<Config> = {}): Plugin {
+export function router(defaultConfig: Partial<Config> = {}): PluginOption {
   const config = getConfig({ ...defaultConfig });
+
+  console.log("ASDASDSAD");
 
   return {
     name: "vite-plugin-tanstack-router-file-based",

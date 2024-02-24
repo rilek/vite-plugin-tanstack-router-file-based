@@ -1,5 +1,5 @@
 import { RouteType } from "./types/types";
-import * as prettier from "prettier";
+import { format } from "prettier";
 
 const genCode = ({ variables, routeTree, config }: any) =>
   `/* **************************************************************
@@ -15,11 +15,11 @@ ${config}
 
 ${routeTree}
 
-// declare module '@tanstack/react-router' {
-//   interface Register {
-//     router: typeof router
-//   }
-// }`;
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router
+  }
+}`;
 
 const genVariableCode = (route: RouteType): string => {
   if (route.type !== "route") {
@@ -114,5 +114,5 @@ export const createRouterCode = async ({ routes }: { routes: RouteType[] }) => {
 
   const code = genCode({ variables, routeTree, config });
 
-  return await prettier.format(code, { semi: true, parser: "typescript" });
+  return await format(code, { semi: true, parser: "typescript" });
 };
