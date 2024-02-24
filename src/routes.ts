@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { flatten, groupBy, identity, pickBy, values } from "lodash";
-import { FileDetails } from "./types/types";
-import {
+import { groupBy, identity, pickBy } from "lodash";
+import type {
+  FileDetails,
   RootRoute,
   RouteType,
   RouteRoute,
@@ -175,7 +175,7 @@ export const prepareRoutes = ({
 
       // Need to get full path, not local one
       const nearestParentPath = getFullRoutePath(
-        flatten(allRoutes.map(([, v]) => values(v))),
+        allRoutes.map(([, v]) => Object.values(v)).flat(),
         nearestParent.route
       );
 

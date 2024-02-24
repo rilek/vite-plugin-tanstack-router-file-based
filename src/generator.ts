@@ -1,5 +1,4 @@
 import { RouteType } from "./types/types";
-import { format } from "prettier";
 
 const genCode = ({ variables, routeTree, config }: any) =>
   `/* **************************************************************
@@ -7,8 +6,7 @@ const genCode = ({ variables, routeTree, config }: any) =>
 * **************************************************************
 */
 
-import { createRoute } from "@tanstack/react-router";
-
+import { AnyRoute, RouteOptions, createRoute } from "@tanstack/react-router";
 ${variables}
 
 ${config}
@@ -17,7 +15,7 @@ ${routeTree}
 
 declare module '@tanstack/react-router' {
   interface Register {
-    router: typeof router
+    router: typeof routeTree
   }
 }`;
 
@@ -32,7 +30,10 @@ const genVariableCode = (route: RouteType): string => {
 };
 
 const genVariables = (routes: RouteType[]) => {
-  return routes.map(genVariableCode).join("\n\n");
+  return routes
+    .map(genVariableCode)
+    .filter(x => !!x)
+    .join("\n");
 };
 
 const genConfigCode = (route: RouteType): string => {
@@ -45,20 +46,20 @@ const genConfigCode = (route: RouteType): string => {
 
     case "index":
       return `const ${route.id} = ${route.id}Import.update ({
-        path: "/",
-        getParentRoute: () => ${route.parent}
-      } as any)`;
+  path: "/",
+  getParentRoute: () => ${route.parent}
+} as RouteOptions<any, any, any, any, any, any, any, any, any, any, any, any, any, any, any, any>) as AnyRoute;`;
     case "layout":
       return `const ${route.id} = ${route.id}Import.update ({
-        // path: "/",
-        id: "${route.id}",
-        getParentRoute: () => ${route.parent}
-      } as any)`;
+  // path: "/",
+  id: "${route.id}",
+  getParentRoute: () => ${route.parent}
+} as RouteOptions<any, any, any, any, any, any, any, any, any, any, any, any, any, any, any, any>) as AnyRoute;`;
     case "route":
       return `const ${route.id} = createRoute({
-        path: "${route.path}",
-        getParentRoute: () => ${route.parent}
-      } as any);`;
+  path: "${route.path}",
+  getParentRoute: () => ${route.parent}
+} as RouteOptions<any, any, any, any, any, any, any, any, any, any, any, any, any, any, any, any>) as AnyRoute;`;
 
     default:
       return "";
@@ -66,7 +67,10 @@ const genConfigCode = (route: RouteType): string => {
 };
 
 const genConfig = (routes: RouteType[]) => {
-  return routes.map(genConfigCode).join("\n\n");
+  return routes
+    .map(genConfigCode)
+    .filter(x => x.length > 0)
+    .join("\n\n");
 };
 
 const findChildren = (routes: RouteType[], parent: string) => {
@@ -74,7 +78,13 @@ const findChildren = (routes: RouteType[], parent: string) => {
   return routes.filter(route => (route as any).parent === parent);
 };
 
-function genRouteTreeNodeCode(routes: RouteType[], node: string): string {
+const ident = (n: number) => new Array(n * 2 + 1).join(" ");
+
+function genRouteTreeNodeCode(
+  routes: RouteType[],
+  node: string,
+  depth: number
+): string {
   const children = findChildren(routes, node);
 
   if (node === "NotFound") return "";
@@ -82,9 +92,9 @@ function genRouteTreeNodeCode(routes: RouteType[], node: string): string {
     return `${node}`;
   }
 
-  return `${node}.addChildren([${children
-    .map(c => genRouteTreeNodeCode(routes, c.id))
-    .join(",")}])`;
+  return `${depth > 0 ? "\n" : ""}${ident(depth)}${node}.addChildren([${children
+    .map(c => genRouteTreeNodeCode(routes, c.id, depth + 1))
+    .join(",")}${depth === 0 ? "\n" : ""}])`;
 }
 
 const genRouteTreeCode = (routes: RouteType[]) => {
@@ -92,7 +102,7 @@ const genRouteTreeCode = (routes: RouteType[]) => {
 
   if (!root) throw new Error("Root object not found");
 
-  return `export const routeTree = ${genRouteTreeNodeCode(routes, root)};`;
+  return `export const routeTree = ${genRouteTreeNodeCode(routes, root, 0)};`;
 };
 
 // const routesOrder = {
@@ -103,7 +113,7 @@ const genRouteTreeCode = (routes: RouteType[]) => {
 //   notFound: 3,
 // } as const;
 
-export const createRouterCode = async ({ routes }: { routes: RouteType[] }) => {
+export const createRouterCode = ({ routes }: { routes: RouteType[] }) => {
   // const sortedRoutes = routes.sort((a, b) => {
   //   return routesOrder[a.type] - routesOrder[b.type];
   // });
@@ -114,5 +124,5 @@ export const createRouterCode = async ({ routes }: { routes: RouteType[] }) => {
 
   const code = genCode({ variables, routeTree, config });
 
-  return await format(code, { semi: true, parser: "typescript" });
+  return code;
 };
