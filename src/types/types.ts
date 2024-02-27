@@ -84,7 +84,7 @@ export type FilesConfig = { appRoot: string; pagesRoot: string };
 export type FileDetails = {
   importPath: string;
   path: string;
-  dir: string;
-  filename: string;
+  // dir: string;
+  // filename: string;
   name: string;
 };

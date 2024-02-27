@@ -6,11 +6,11 @@ export const buildRouteFileRegex = (
   absolute = true
 ) =>
   new RegExp(
-    `(./${path.join(
+    `(${absolute ? "" : "./"}${path.join(
       absolute ? root : ".",
       sourceRoot,
       routesDirectory
-    )}[A-Za-z./$-]*)(${Object.values(fileNames).join("|")}).(${extensions.join(
+    )}/[A-Za-z0-9./$-]*)(${Object.values(fileNames).join("|")}).(${extensions.join(
       "|"
     )})$`
   );
@@ -56,8 +56,6 @@ const parseFilePath = (config: Config, filePath: string): FileDetails => {
   const route = {
     importPath,
     path,
-    dir,
-    filename: `${name}/${extension}`,
     name,
     extension,
   };

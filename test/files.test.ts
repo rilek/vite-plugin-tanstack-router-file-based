@@ -1,82 +1,48 @@
 import { describe, expect, it } from "vitest";
-import { parseFilePaths } from "../src/files";
+import {
+  buildRouteFileRegex,
+  fileSearchPath,
+  parseFilePaths,
+} from "../src/files";
 import { getConfig } from "../src/config";
-
-const testProjectDirectory = [
-  "./src/pages/index.tsx",
-  "./src/pages/layout.tsx",
-  "./src/pages/not-found.tsx",
-  "./src/pages/root.tsx",
-  "./src/pages/login/index.tsx",
-  "./src/pages/product/index.tsx",
-  "./src/pages/product/layout.tsx",
-  "./src/pages/product/$slug/index.tsx",
-  "./src/pages/product/catalog/layout.tsx",
-  "./src/pages/product/catalog/gallery/index.tsx",
-];
+import { testTreeDirectory, testTreeMeta } from "./testData";
 
 describe("Get files structure", () => {
   const config = getConfig();
-  const filesStructure = parseFilePaths(config, testProjectDirectory);
+  const filesStructure = parseFilePaths(config, testTreeDirectory);
 
-  it("should pass", () => {
-    expect(filesStructure).toBeTruthy();
+  it("Builds the route file regex correctly", () => {
+    const config = getConfig();
+    const regex = buildRouteFileRegex(config, false);
+
+    // Test with absolute path
+    expect(regex.test("./src/pages/index.tsx")).toBe(true);
+    expect(regex.test("./src/pages/layout.tsx")).toBe(true);
+    expect(regex.test("./src/pages/home.tsx")).toBe(false);
+    expect(regex.test("./src/routes/index.tsx")).toBe(false);
+
+    // Test with relative path
+    const absoluteRegex = buildRouteFileRegex(getConfig({ root: "/home/app" }));
+
+    expect(absoluteRegex.test("/home/app/src/pages/index.ts")).toBe(true);
+    expect(absoluteRegex.test("/home/app/src/pages/layout.ts")).toBe(true);
+    expect(absoluteRegex.test("/home/anotherapp/src/routes/contact.tsx")).toBe(
+      false
+    );
   });
 
-  // describe("Split file path and directory into tuple", () => {
-  //   it("should split file path and directory into tuple", () => {
-  //     expect(filesStructure).toStrictEqual(testFileDirTuples);
-  //   });
-  // });
+  it("Generates the correct file search path", () => {
+    const config = getConfig();
+    const searchPath = fileSearchPath(config);
 
-  // describe("router", () => {
-  //   describe("genFiles", () => {
-  //     it("should parse global root file path and create Route object", () => {
-  //       expect(genFiles()).toStrictEqual();
-  //     });
+    expect(searchPath).toBe(
+      `${config.sourceRoot}/${config.routesDirectory}/**/{${Object.values(
+        config.fileNames
+      ).join(",")}}.{${config.extensions.join(",")}}`
+    );
+  });
 
-  //     it("should parse root index file path and create Route object", () => {
-  //       expect(parseRoute(indexRoute.filePath)).toStrictEqual(indexRoute.route);
-  //     });
-
-  //     it("should parse root layout file path and create Route object", () => {
-  //       expect(parseRoute(layoutRoute.filePath)).toStrictEqual(layoutRoute.route);
-  //     });
-
-  //     it("should parse root custom route file path and create Route object", () => {
-  //       expect(parseRoute(customRoute.filePath)).toStrictEqual(customRoute.route);
-  //     });
-
-  //     it("should parse root dynamic route file path and create Route object", () => {
-  //       expect(parseRoute(dynamicRoute.filePath)).toStrictEqual(dynamicRoute.route);
-  //     });
-
-  //     it("should parse nested index file path and create Route object", () => {
-  //       expect(parseRoute(nestedIndexRoute.filePath)).toStrictEqual(nestedIndexRoute.route);
-  //     });
-
-  //     it("should parse nested layout file path and create Route object", () => {
-  //       expect(parseRoute(nestedLayoutRoute.filePath)).toStrictEqual(nestedLayoutRoute.route);
-  //     });
-
-  //     it("should parse nested custom route file path and create Route object", () => {
-  //       expect(parseRoute(nestedCustomRoute.filePath)).toStrictEqual(nestedCustomRoute.route);
-  //     });
-
-  //     it("should parse nested dynamic route file path and create Route object", () => {
-  //       expect(parseRoute(nestedDynamicRoute.filePath)).toStrictEqual(nestedDynamicRoute.route);
-  //     });
-  //   });
-
-  //   describe("getRoutes", () => {
-  //     it("should transform file paths into array of Routes", () => {
-  //       expect(getRoutes({ filePaths })).toStrictEqual(rawRoutes);
-  //     });
-  //   });
-
-  //   // describe("buildRouteTree", () => {
-  //   //   it("should build route tree", () => {
-  //   //     expect(buildRouteTree({ routes: rawRoutes })).toStrictEqual(routesTree);
-  //   //   });
-  //   // });
+  it("Gets proper files metadata", () => {
+    expect(filesStructure).toStrictEqual(testTreeMeta);
+  });
 });
